@@ -14,7 +14,7 @@ int main() {
 
     SetConfigFlags(FLAG_MSAA_4X_HINT);
     SetConfigFlags(FLAG_VSYNC_HINT);
-    //SetConfigFlags(FLAG_FULLSCREEN_MODE);
+    SetConfigFlags(FLAG_FULLSCREEN_MODE);
 
     InitWindow(screenWidth, screenHeight, "Monopoly");
 
