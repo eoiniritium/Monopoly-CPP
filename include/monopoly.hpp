@@ -3,6 +3,7 @@
 #include <vector>
 #include <map>
 #include "raylib.h"
+#include "misc.hpp"
 
 namespace Monopoly {
     enum LocationID {
@@ -162,10 +163,6 @@ namespace Monopoly {
     };
 
     namespace drawing {
-        void drawCorner(int row_height, std::string txt, int x, int y, Color col, Font font, int fs) {
-            DrawRectangle(x, y, row_height, row_height, col);
-            DrawTextEx(font, &txt[0], (Vector2){(float)(x+5), (float)(y+5)}, fs, 0, WHITE);
-        }
 
         float getWidthNS(int units_per_side, int screenwidth, padding pad, int rowHeight) {
             float range = screenwidth - pad.right - pad.left - 2*(rowHeight);
@@ -182,6 +179,11 @@ namespace Monopoly {
             return resolved;
         }
 
+        void drawCorner(int row_height, std::string txt, int x, int y, Color col, Font font, int fs) {
+            DrawRectangle(x, y, row_height, row_height, col);
+            DrawTextEx(font, &txt[0], (Vector2){(float)(x+(fs/2)), (float)(y+(fs/2))}, fs, 0, WHITE);
+        }
+
         void drawCorners(std::vector<Location> boardLocations, int sw, int sh, padding pad, int rowHeight, Font font, int fs) {
             int sideL = rowHeight;
             drawCorner(sideL , boardLocations[00].name, sw - pad.right - sideL , sh - sideL - pad.bottom , RED    , font, fs);
@@ -190,26 +192,29 @@ namespace Monopoly {
             drawCorner(sideL , boardLocations[30].name, sw - pad.right - sideL , pad.top                 , BLUE   , font, fs);
         }
 
-        void drawLocation(direction dir, int x, int y, int width, int height, Color background, Color outline, Color banner, Location location, frac bannerHeightAsFractionOfCardHeight) {
+        void drawLocation(direction dir, float x, float y, float width, float height, Color background, Color outline, Color banner, Location location, frac bannerHeightAsFractionOfCardHeight, Font font, float fs) {
             DrawRectangle(x, y, width, height, background);
             float fraction   = resolveFraction(bannerHeightAsFractionOfCardHeight);
             frac  unResolved = bannerHeightAsFractionOfCardHeight;
             switch(dir) {
                 case NORTH:
-                    //std::cout << fraction << std::endl;
                     DrawRectangle(x, y, width, height * fraction, banner);
+                    DrawTextEx(font, misc::wrapText(location.name, font, fs, width - (fs*2)).c_str(), (Vector2){x + (fs/2), y + (fs/3) + height * fraction}, fs, 0, BLACK);
                     break;
                 case SOUTH:
                     DrawRectangle(x, y + ((unResolved.bottom - unResolved.top) * (float)height) * fraction, width, fraction * (float)height, banner);
+                    DrawTextEx(font, misc::wrapText(location.name, font, fs, width - (fs*2)).c_str(), (Vector2){x + (fs/2), y + (fs/3)}, fs, 0, BLACK);
                     break;
                 case WEST:
                     DrawRectangle(x, y, (float)width * fraction, height, banner);
+                    DrawTextEx(font, misc::wrapText(location.name, font, fs, width - (fs*2) - (float)width * fraction).c_str(), (Vector2){x + (fs/2) + (float)width * fraction, y + (fs/3)}, fs, 0, BLACK);
                     break;
                 case EAST:
                     DrawRectangle(x + ((unResolved.bottom - unResolved.top) * (float)width) * fraction, y, fraction * float(width), height, banner);
+                    DrawTextEx(font, misc::wrapText(location.name, font, fs, width - (fs*2) - (float)width * fraction).c_str(), (Vector2){x + (fs/2), y + (fs/3)}, fs, 0, BLACK);
                     break;
             }
-            DrawRectangleLinesEx((Rectangle){(float)x, (float)y, (float)width, (float)height}, 0.75f, outline);
+            DrawRectangleLinesEx((Rectangle){(float)x, (float)y, (float)width, (float)height}, 0.8f, outline);
         }
     
         void drawSides(std::vector<Location> boardLocations, std::map<ColourSet, Color> bannerColours, int sw, int sh, padding pad, int rowHeight, int units_per_side, Font font, int fs, frac bannerHeightAsFractionOfCardHeight) {
@@ -219,32 +224,32 @@ namespace Monopoly {
             int EW_width  = rowHeight;
             float EW_height = getWidthWE(units_per_side, sh, pad, rowHeight);
 
-            int side = -1;
+            int side = 0;
             int topcount = 0;
             int rightcount = 0;
             int leftcount = 0;
-            for(size_t i = 0; i < boardLocations.size(); ++i) {
-                if((i%10) == 0) { // if it is corner
+            for(size_t i = 1; i < boardLocations.size(); ++i) {
+                if(!(i%10)) { // if it is corner
                     ++side;
                     continue;
                 }
                 
                 switch(side) {
                     // BOTTOM
-                    case 0: //        -dir-   ----------------x location-------------------    -----------------------y location------------------------   -width--   -height-    -background colour-  -outline colour-  -----------banner colour---------------   ----location-----  ----------banner height-----------
-                        drawLocation( NORTH , (sw - pad.right) - (i * NS_width) - rowHeight  , (sh - pad.bottom) - NS_height                             , NS_width , NS_height , WHITE              , BLACK           , bannerColours[boardLocations[i].colour] , boardLocations[i] , bannerHeightAsFractionOfCardHeight );
+                    case 0: //        -dir-   ----------------x location-------------------    -----------------------y location------------------------   -width--   -height-    -background colour-  -outline colour-  -----------banner colour---------------   ----location-----  -----------banner height-----------
+                        drawLocation( NORTH , (sw - pad.right) - (i * NS_width) - rowHeight  , (sh - pad.bottom) - NS_height                             , NS_width , NS_height , WHITE              , BLACK           , bannerColours[boardLocations[i].colour] , boardLocations[i] , bannerHeightAsFractionOfCardHeight, font, fs);
                         break;
                     // LEFT
                     case 1:
-                        drawLocation( EAST  , pad.left                                       , (sh - pad.bottom - rowHeight) - (++leftcount * EW_height) , EW_width , EW_height , WHITE              , BLACK           , bannerColours[boardLocations[i].colour] , boardLocations[i] , bannerHeightAsFractionOfCardHeight );
+                        drawLocation( EAST  , pad.left                                       , (sh - pad.bottom - rowHeight) - (++leftcount * EW_height) , EW_width , EW_height , WHITE              , BLACK           , bannerColours[boardLocations[i].colour] , boardLocations[i] , bannerHeightAsFractionOfCardHeight, font, fs);
                         break;
                     // TOP
                     case 2:
-                        drawLocation( SOUTH , pad.left + rowHeight + (topcount++ * NS_width) , pad.top                                                   , NS_width , NS_height , WHITE              , BLACK           , bannerColours[boardLocations[i].colour] , boardLocations[i] , bannerHeightAsFractionOfCardHeight );
+                        drawLocation( SOUTH , pad.left + rowHeight + (topcount++ * NS_width) , pad.top                                                   , NS_width , NS_height , WHITE              , BLACK           , bannerColours[boardLocations[i].colour] , boardLocations[i] , bannerHeightAsFractionOfCardHeight, font, fs);
                         break;
                     // RIGHT
                     case 3:
-                        drawLocation( WEST  , sw - pad.right - EW_width                      , pad.top + rowHeight + (rightcount++ * EW_height)          , EW_width , EW_height , WHITE              , BLACK           , bannerColours[boardLocations[i].colour] , boardLocations[i] , bannerHeightAsFractionOfCardHeight );
+                        drawLocation( WEST  , sw - pad.right - EW_width                      , pad.top + rowHeight + (rightcount++ * EW_height)          , EW_width , EW_height , WHITE              , BLACK           , bannerColours[boardLocations[i].colour] , boardLocations[i] , bannerHeightAsFractionOfCardHeight, font, fs);
                         break;
                 }
             }

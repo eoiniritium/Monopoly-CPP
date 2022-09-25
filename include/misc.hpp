@@ -5,28 +5,35 @@
 #include "raylib.h"
 
 namespace misc {
-    std::string wrapText(std::string txt, Font font, int fontsize, int max_width) {
-        Vector2 txtLen = MeasureTextEx(font, &txt[0], fontsize, 0); // spacing always = 0
-        if(txtLen.x <= max_width) {
-            return txt;
-        }
-        std::string inp = txt;
-
+    std::string wrapText(std::string txt, Font font, float fontsize, float max_width) {
+        
+        std::string wor = txt;
         std::string ret = "";
-        while(true) {
-            int i = 0;
-            while(MeasureTextEx(font, &(inp.substr(i++))[0], fontsize, 0).x < max_width) {
-                ret += txt[i];
-                std::cout << ret << std::endl;
-            }
+        std::string substr;
+        int i;
 
-            if(i == 0) {
+        while(wor.length() > 0) {
+            if(MeasureTextEx(font, wor.c_str(), fontsize, 0).x >= max_width) {
+                i = 0;
+                do {
+                    
+                    substr = wor.substr(0, i++);
+                } while(MeasureTextEx(font, substr.c_str(), fontsize, 0).x < max_width);
+                ret += substr + "\n";
+                wor.erase(0, i-1);
+            }
+            else{
+                ret += wor;
                 break;
             }
-            ret += '\n';
-            inp.erase(0, i);
         }
 
+        // Check if first chars are ' '
+        for(i = 0; (size_t)i < ret.length(); ++i) {
+            if(ret[i] == '\n' && ret[i+1] == ' ') {
+                ret.erase(i+1, 1);
+            }
+        }
         return ret;
     }
 }

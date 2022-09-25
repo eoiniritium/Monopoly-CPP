@@ -11,6 +11,9 @@ int main() {
     const int screenWidth = 1920;
     const int screenHeight = 1080;
     const int fontsize = 16;
+    const int titlefontsize = 72;
+    const int rowHeight = 200;
+    const int unitsPerSide = 9;
 
     SetConfigFlags(FLAG_MSAA_4X_HINT);
     SetConfigFlags(FLAG_VSYNC_HINT);
@@ -18,10 +21,11 @@ int main() {
 
     InitWindow(screenWidth, screenHeight, "Monopoly");
 
-    Font txtFont = LoadFontEx("fonts/arial.ttf", fontsize, 0, 0);
+    Font txtFont   = LoadFontEx("fonts/arial.ttf", fontsize, 0, 0);
+    Font titleFont = LoadFontEx("fonts/tallfancyfont.otf", titlefontsize, 0, 0);
 
     // Colours                                        -R-   -G-   -B-   -A-
-    Color background                       = (Color){ 160 , 222 , 255 , 255 };
+    Color background                       = (Color){ 226 , 247 , 212 , 255 };
     std::map<Monopoly::ColourSet, Color> stripColours = {
         {Monopoly::ColourSet::BROWN_M      , (Color){ 99  , 76  , 13  , 255 }},
         {Monopoly::ColourSet::LIGHT_BLUE_M , (Color){ 149 , 211 , 232 , 255 }},
@@ -35,17 +39,13 @@ int main() {
 
     Monopoly::padding padding = {10, 10, 10, 500};
 
-    //std::string lorem = "Neque porro quisquam est qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit";
-    //std::string wrappedLorem = misc::wrapText(lorem, txtFont, fontsize, 20);
-    //std::cout << wrappedLorem << std::endl;
-    //return 0;    
-
     // Game loop
     while(!WindowShouldClose()) {
         BeginDrawing();
             ClearBackground(background);
-            Monopoly::drawBoard(locations, stripColours, screenWidth, screenHeight, padding, 150, 9, txtFont, fontsize, (Monopoly::frac){1, 5});
-
+            
+            Monopoly::drawBoard(locations, stripColours, screenWidth, screenHeight, padding, rowHeight, unitsPerSide, txtFont, fontsize, (Monopoly::frac){1, 25});
+            DrawTextEx(titleFont, "MONOPOLY", (Vector2){10, 10}, titlefontsize, 5, BLACK);
 
         EndDrawing();
     }
