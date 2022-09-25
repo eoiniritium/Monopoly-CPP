@@ -116,7 +116,7 @@ namespace Monopoly {
         ret.push_back({CHANCE                , CHANCE_TYPE          , NA_M          , "CHANCE"                   , 0     , 0           });
         ret.push_back({EUSTON_ROAD           , STREET_TYPE          , LIGHT_BLUE_M  , "EUSTON ROAD"              , 100   , 0           });
         ret.push_back({PENTONVILLE_ROAD      , STREET_TYPE          , LIGHT_BLUE_M  , "PENTONVILLE ROAD"         , 120   , 0           });
-        ret.push_back({JAIL                  , JAIL_TYPE            , NA_M          , "IN JAIL\nJUST VISITING"   , 0     , 0           });
+        ret.push_back({JAIL                  , JAIL_TYPE            , NA_M          , "IN JAIL JUST VISITING"   , 0     , 0           });
         ret.push_back({PALL_MALL             , STREET_TYPE          , PINK_M        , "PALL MALL"                , 140   , 0           });
         ret.push_back({ELECTRIC_COMPANY      , UTILITIES_TYPE       , NA_M          , "ELECTRIC COMPANY"         , 150   , 0           });
         ret.push_back({WHITEHALL             , STREET_TYPE          , PINK_M        , "WHITEHALL"                , 140   , 0           });
@@ -186,13 +186,13 @@ namespace Monopoly {
 
         void drawCorners(std::vector<Location> boardLocations, int sw, int sh, padding pad, int rowHeight, Font font, int fs) {
             int sideL = rowHeight;
-            drawCorner(sideL , boardLocations[00].name, sw - pad.right - sideL , sh - sideL - pad.bottom , RED    , font, fs);
-            drawCorner(sideL , boardLocations[10].name, pad.left               , sh - sideL - pad.bottom , ORANGE , font, fs);
-            drawCorner(sideL , boardLocations[20].name, pad.left               , pad.top                 , GREEN  , font, fs);
-            drawCorner(sideL , boardLocations[30].name, sw - pad.right - sideL , pad.top                 , BLUE   , font, fs);
+            drawCorner(sideL , misc::wrapText(boardLocations[00].name, font, fs, sideL - fs), sw - pad.right - sideL , sh - sideL - pad.bottom , RED    , font, fs);
+            drawCorner(sideL , misc::wrapText(boardLocations[10].name, font, fs, sideL - fs), pad.left               , sh - sideL - pad.bottom , ORANGE , font, fs);
+            drawCorner(sideL , misc::wrapText(boardLocations[20].name, font, fs, sideL - fs), pad.left               , pad.top                 , GREEN  , font, fs);
+            drawCorner(sideL , misc::wrapText(boardLocations[30].name, font, fs, sideL - fs), sw - pad.right - sideL , pad.top                 , BLUE   , font, fs);
         }
 
-        void drawLocation(direction dir, float x, float y, float width, float height, Color background, Color outline, Color banner, Location location, frac bannerHeightAsFractionOfCardHeight, Font font, float fs) {
+        void drawLocation(direction dir, float x, float y, float width, float height, Color background, Color outline, Color banner, Location location, frac bannerHeightAsFractionOfCardHeight, Font font, float fs, Font secondaryfont, float secondaryfontsize) {
             DrawRectangle(x, y, width, height, background);
             float fraction   = resolveFraction(bannerHeightAsFractionOfCardHeight);
             frac  unResolved = bannerHeightAsFractionOfCardHeight;
@@ -215,9 +215,34 @@ namespace Monopoly {
                     break;
             }
             DrawRectangleLinesEx((Rectangle){(float)x, (float)y, (float)width, (float)height}, 0.8f, outline);
+
+            LocationType locType = location.type;
+            // Draw Price
+            if(matchList(locType, {STREET_TYPE, TAX_TYPE, TRAIN_STATION_TYPE, UTILITIES_TYPE})) {
+                std::string prefix = "$";
+                std::string cost = std::to_string(location.cost);
+                switch(dir) {
+                    case NORTH:
+                        DrawTextEx(secondaryfont, prefix.c_str(), (Vector2){x + (fs/2), y - fs/3 - secondaryfontsize + height}, secondaryfontsize, 0, BLACK);
+                        DrawTextEx(font, cost.c_str(), (Vector2){x + (fs/2) + MeasureTextEx(secondaryfont, prefix.c_str(), secondaryfontsize, 0).x + secondaryfontsize / 10, y - (4*fs/3) + height}, fs, 0, BLACK);
+                        break;
+                    case SOUTH:
+                        DrawTextEx(secondaryfont, prefix.c_str(), (Vector2){x + (fs/2), y - fs/3 - secondaryfontsize + height - (float)height * fraction}, secondaryfontsize, 0, BLACK);
+                        DrawTextEx(font, cost.c_str(), (Vector2){x + (fs/2) + MeasureTextEx(secondaryfont, prefix.c_str(), secondaryfontsize, 0).x + secondaryfontsize / 10, y - (4*fs/3) + height - (float)height * fraction}, fs, 0, BLACK);
+                        break;
+                    case EAST:
+                        DrawTextEx(secondaryfont, prefix.c_str(), (Vector2){x + (fs/2), y - fs/3 - secondaryfontsize + height}, secondaryfontsize, 0, BLACK);
+                        DrawTextEx(font, cost.c_str(), (Vector2){x + (fs/2) + MeasureTextEx(secondaryfont, prefix.c_str(), secondaryfontsize, 0).x + secondaryfontsize / 10, y - (4*fs/3) + height}, fs, 0, BLACK);
+                        break;
+                    case WEST:
+                        DrawTextEx(secondaryfont, prefix.c_str(), (Vector2){x + (fs/2) + (float)width * fraction, y - fs/3 - secondaryfontsize + height}, secondaryfontsize, 0, BLACK);
+                        DrawTextEx(font, cost.c_str(), (Vector2){x + (fs/2) + MeasureTextEx(secondaryfont, prefix.c_str(), secondaryfontsize, 0).x + secondaryfontsize / 10 + (float)width * fraction, y - (4*fs/3) + height}, fs, 0, BLACK);
+                        break;
+                }
+            }
         }
     
-        void drawSides(std::vector<Location> boardLocations, std::map<ColourSet, Color> bannerColours, int sw, int sh, padding pad, int rowHeight, int units_per_side, Font font, int fs, frac bannerHeightAsFractionOfCardHeight) {
+        void drawSides(std::vector<Location> boardLocations, std::map<ColourSet, Color> bannerColours, int sw, int sh, padding pad, int rowHeight, int units_per_side, Font font, int fs, frac bannerHeightAsFractionOfCardHeight, Font secondaryfont, int secondaryfontsize) {
             float NS_width  = getWidthNS(units_per_side, sw, pad, rowHeight);
             int NS_height = rowHeight;
 
@@ -237,27 +262,27 @@ namespace Monopoly {
                 switch(side) {
                     // BOTTOM
                     case 0: //        -dir-   ----------------x location-------------------    -----------------------y location------------------------   -width--   -height-    -background colour-  -outline colour-  -----------banner colour---------------   ----location-----  -----------banner height-----------
-                        drawLocation( NORTH , (sw - pad.right) - (i * NS_width) - rowHeight  , (sh - pad.bottom) - NS_height                             , NS_width , NS_height , WHITE              , BLACK           , bannerColours[boardLocations[i].colour] , boardLocations[i] , bannerHeightAsFractionOfCardHeight, font, fs);
+                        drawLocation( NORTH , (sw - pad.right) - (i * NS_width) - rowHeight  , (sh - pad.bottom) - NS_height                             , NS_width , NS_height , WHITE              , BLACK           , bannerColours[boardLocations[i].colour] , boardLocations[i] , bannerHeightAsFractionOfCardHeight, font, fs, secondaryfont, secondaryfontsize);
                         break;
                     // LEFT
                     case 1:
-                        drawLocation( EAST  , pad.left                                       , (sh - pad.bottom - rowHeight) - (++leftcount * EW_height) , EW_width , EW_height , WHITE              , BLACK           , bannerColours[boardLocations[i].colour] , boardLocations[i] , bannerHeightAsFractionOfCardHeight, font, fs);
+                        drawLocation( EAST  , pad.left                                       , (sh - pad.bottom - rowHeight) - (++leftcount * EW_height) , EW_width , EW_height , WHITE              , BLACK           , bannerColours[boardLocations[i].colour] , boardLocations[i] , bannerHeightAsFractionOfCardHeight, font, fs, secondaryfont, secondaryfontsize);
                         break;
                     // TOP
                     case 2:
-                        drawLocation( SOUTH , pad.left + rowHeight + (topcount++ * NS_width) , pad.top                                                   , NS_width , NS_height , WHITE              , BLACK           , bannerColours[boardLocations[i].colour] , boardLocations[i] , bannerHeightAsFractionOfCardHeight, font, fs);
+                        drawLocation( SOUTH , pad.left + rowHeight + (topcount++ * NS_width) , pad.top                                                   , NS_width , NS_height , WHITE              , BLACK           , bannerColours[boardLocations[i].colour] , boardLocations[i] , bannerHeightAsFractionOfCardHeight, font, fs, secondaryfont, secondaryfontsize);
                         break;
                     // RIGHT
                     case 3:
-                        drawLocation( WEST  , sw - pad.right - EW_width                      , pad.top + rowHeight + (rightcount++ * EW_height)          , EW_width , EW_height , WHITE              , BLACK           , bannerColours[boardLocations[i].colour] , boardLocations[i] , bannerHeightAsFractionOfCardHeight, font, fs);
+                        drawLocation( WEST  , sw - pad.right - EW_width                      , pad.top + rowHeight + (rightcount++ * EW_height)          , EW_width , EW_height , WHITE              , BLACK           , bannerColours[boardLocations[i].colour] , boardLocations[i] , bannerHeightAsFractionOfCardHeight, font, fs, secondaryfont, secondaryfontsize);
                         break;
                 }
             }
         }
     }
 
-    void drawBoard(std::vector<Location> boardLocations, std::map<ColourSet, Color> stripColours, int screenwidth, int screenheight, padding pad, int row_height, int units_per_side, Font font, int fontsize, frac bannerHeight) {
-        drawing::drawSides(boardLocations, stripColours, screenwidth, screenheight, pad, row_height, units_per_side, font, fontsize, bannerHeight);
+    void drawBoard(std::vector<Location> boardLocations, std::map<ColourSet, Color> stripColours, int screenwidth, int screenheight, padding pad, int row_height, int units_per_side, Font font, int fontsize, Font secondaryfont, int secondaryfontsize, frac bannerHeight) {
+        drawing::drawSides(boardLocations, stripColours, screenwidth, screenheight, pad, row_height, units_per_side, font, fontsize, bannerHeight, secondaryfont, secondaryfontsize);
         drawing::drawCorners(boardLocations, screenwidth, screenheight, pad, row_height, font, fontsize);
     }
 }

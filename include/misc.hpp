@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include "raylib.h"
+#include "monopoly.hpp"
 
 namespace misc {
     std::string wrapText(std::string txt, Font font, float fontsize, float max_width) {
@@ -37,3 +38,11 @@ namespace misc {
         return ret;
     }
 }
+
+template<typename T>
+    bool matchList(T var, std::vector<T> matches) {
+        for(auto itr : matches) {
+            if(itr == var) return true;
+        }
+        return false;
+    }

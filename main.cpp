@@ -10,9 +10,12 @@ int main() {
 
     const int screenWidth = 1920;
     const int screenHeight = 1080;
+
     const int fontsize = 16;
     const int titlefontsize = 72;
-    const int rowHeight = 200;
+    const int poundsymbolfontsize = 16;
+
+    const int rowHeight = 120;
     const int unitsPerSide = 9;
 
     SetConfigFlags(FLAG_MSAA_4X_HINT);
@@ -21,8 +24,9 @@ int main() {
 
     InitWindow(screenWidth, screenHeight, "Monopoly");
 
-    Font txtFont   = LoadFontEx("fonts/arial.ttf", fontsize, 0, 0);
-    Font titleFont = LoadFontEx("fonts/tallfancyfont.otf", titlefontsize, 0, 0);
+    Font txtFont    = LoadFontEx("fonts/monopolyfont.ttf", fontsize, 0, 0);
+    Font titleFont  = LoadFontEx("fonts/tallfancyfont.otf", titlefontsize, 0, 0);
+    //Font robotoBold = LoadFontEx("fonts/roboto_bold.ttf", poundsymbolfontsize, 0, 0);
 
     // Colours                                        -R-   -G-   -B-   -A-
     Color background                       = (Color){ 226 , 247 , 212 , 255 };
@@ -37,14 +41,14 @@ int main() {
         {Monopoly::ColourSet::DARK_BLUE_M  , (Color){ 25  , 35  , 145 , 255 }},
     };
 
-    Monopoly::padding padding = {10, 10, 10, 500};
+    Monopoly::padding padding = {10, 10, 10, 700};
 
     // Game loop
     while(!WindowShouldClose()) {
         BeginDrawing();
             ClearBackground(background);
             
-            Monopoly::drawBoard(locations, stripColours, screenWidth, screenHeight, padding, rowHeight, unitsPerSide, txtFont, fontsize, (Monopoly::frac){1, 25});
+            Monopoly::drawBoard(locations, stripColours, screenWidth, screenHeight, padding, rowHeight, unitsPerSide, txtFont, fontsize, txtFont, poundsymbolfontsize, (Monopoly::frac){1, 25});
             DrawTextEx(titleFont, "MONOPOLY", (Vector2){10, 10}, titlefontsize, 5, BLACK);
 
         EndDrawing();
