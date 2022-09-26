@@ -70,11 +70,17 @@ namespace Monopoly {
         NA_M
     };
 
-    enum direction {
+    enum Direction {
         NORTH,
         EAST,
         SOUTH,
         WEST
+    };
+
+    enum LocationTextures{
+        TRAIN_TEXTURE,
+        CHANCE_TEXTURE,
+        COMMUNITY_CHEST_TEXTURE
     };
 
     struct Location {
@@ -84,22 +90,6 @@ namespace Monopoly {
         std::string name;
         int cost;
         int house_price;
-    };
-    
-    class Player {
-        public:
-        Player() {
-
-        }
-
-        int getBoardLocation() {
-            return board_location;
-        }
-
-        private:
-        int funds;
-        std::vector<Location> locations_bought;
-        int board_location;
     };
 
     std::vector<Location> setupBoard() {
@@ -192,7 +182,7 @@ namespace Monopoly {
             drawCorner(sideL , misc::wrapText(boardLocations[30].name, font, fs, sideL - fs), sw - pad.right - sideL , pad.top                 , BLUE   , font, fs);
         }
 
-        void drawLocation(direction dir, float x, float y, float width, float height, Color background, Color outline, Color banner, Location location, frac bannerHeightAsFractionOfCardHeight, Font font, float fs, Font secondaryfont, float secondaryfontsize) {
+        void drawLocation(Direction dir, float x, float y, float width, float height, Color background, Color outline, Color banner, Location location, frac bannerHeightAsFractionOfCardHeight, Font font, float fs, Font secondaryfont, float secondaryfontsize, std::map<Monopoly::LocationTextures, Texture2D> LocationTextures) {
             DrawRectangle(x, y, width, height, background);
             float fraction   = resolveFraction(bannerHeightAsFractionOfCardHeight);
             frac  unResolved = bannerHeightAsFractionOfCardHeight;
@@ -240,9 +230,26 @@ namespace Monopoly {
                         break;
                 }
             }
+            if(matchList(locType, {TRAIN_STATION_TYPE})) {
+
+                Texture2D tex = LocationTextures[TRAIN_TEXTURE];
+                float TEXheight = 40.0f;
+                float TEXscale = TEXheight / tex.height;
+                float TEXwidth = tex.width * TEXscale;
+                
+                
+                switch(dir) {
+                    case NORTH:
+                        DrawTextureEx(tex, (Vector2){x + width/2 - TEXwidth/2, y + height/2 - TEXheight/2 + (MeasureTextEx(font, location.name.c_str(), fs, 0).y)}, 0.0f, TEXscale, WHITE);
+                        break;
+                    case SOUTH:
+                        DrawTextureEx(tex, (Vector2){x + width/2 - TEXwidth/2, y + height/2 - TEXheight/2 + (MeasureTextEx(font, location.name.c_str(), fs, 0).y) - TEXheight/5}, 0.0f, TEXscale, WHITE);
+                        break;
+                }
+            }
         }
     
-        void drawSides(std::vector<Location> boardLocations, std::map<ColourSet, Color> bannerColours, int sw, int sh, padding pad, int rowHeight, int units_per_side, Font font, int fs, frac bannerHeightAsFractionOfCardHeight, Font secondaryfont, int secondaryfontsize) {
+        void drawSides(std::vector<Location> boardLocations, std::map<ColourSet, Color> bannerColours, int sw, int sh, padding pad, int rowHeight, int units_per_side, Font font, int fs, frac bannerHeightAsFractionOfCardHeight, Font secondaryfont, int secondaryfontsize, std::map<Monopoly::LocationTextures, Texture2D> LocationTextures) {
             float NS_width  = getWidthNS(units_per_side, sw, pad, rowHeight);
             int NS_height = rowHeight;
 
@@ -261,30 +268,47 @@ namespace Monopoly {
                 
                 switch(side) {
                     // BOTTOM
-                    case 0: //        -dir-   ----------------x location-------------------    -----------------------y location------------------------   -width--   -height-    -background colour-  -outline colour-  -----------banner colour---------------   ----location-----  -----------banner height-----------
-                        drawLocation( NORTH , (sw - pad.right) - (i * NS_width) - rowHeight  , (sh - pad.bottom) - NS_height                             , NS_width , NS_height , WHITE              , BLACK           , bannerColours[boardLocations[i].colour] , boardLocations[i] , bannerHeightAsFractionOfCardHeight, font, fs, secondaryfont, secondaryfontsize);
+                    case 0: //        -dir-   ----------------x location-------------------    -----------------------y location------------------------   -width--   -height-    -background colour-  -outline colour-  -----------banner colour---------------   ----location-----  -----------banner height-----------  -font-  -fontsize-  -secondary font-  -secondary font size-
+                        drawLocation( NORTH , (sw - pad.right) - (i * NS_width) - rowHeight  , (sh - pad.bottom) - NS_height                             , NS_width , NS_height , WHITE              , BLACK           , bannerColours[boardLocations[i].colour] , boardLocations[i] , bannerHeightAsFractionOfCardHeight, font  , fs        , secondaryfont   , secondaryfontsize    , LocationTextures);
                         break;
                     // LEFT
                     case 1:
-                        drawLocation( EAST  , pad.left                                       , (sh - pad.bottom - rowHeight) - (++leftcount * EW_height) , EW_width , EW_height , WHITE              , BLACK           , bannerColours[boardLocations[i].colour] , boardLocations[i] , bannerHeightAsFractionOfCardHeight, font, fs, secondaryfont, secondaryfontsize);
+                        drawLocation( EAST  , pad.left                                       , (sh - pad.bottom - rowHeight) - (++leftcount * EW_height) , EW_width , EW_height , WHITE              , BLACK           , bannerColours[boardLocations[i].colour] , boardLocations[i] , bannerHeightAsFractionOfCardHeight, font  , fs        , secondaryfont   , secondaryfontsize    , LocationTextures);
                         break;
                     // TOP
                     case 2:
-                        drawLocation( SOUTH , pad.left + rowHeight + (topcount++ * NS_width) , pad.top                                                   , NS_width , NS_height , WHITE              , BLACK           , bannerColours[boardLocations[i].colour] , boardLocations[i] , bannerHeightAsFractionOfCardHeight, font, fs, secondaryfont, secondaryfontsize);
+                        drawLocation( SOUTH , pad.left + rowHeight + (topcount++ * NS_width) , pad.top                                                   , NS_width , NS_height , WHITE              , BLACK           , bannerColours[boardLocations[i].colour] , boardLocations[i] , bannerHeightAsFractionOfCardHeight, font  , fs        , secondaryfont   , secondaryfontsize    , LocationTextures);
                         break;
                     // RIGHT
                     case 3:
-                        drawLocation( WEST  , sw - pad.right - EW_width                      , pad.top + rowHeight + (rightcount++ * EW_height)          , EW_width , EW_height , WHITE              , BLACK           , bannerColours[boardLocations[i].colour] , boardLocations[i] , bannerHeightAsFractionOfCardHeight, font, fs, secondaryfont, secondaryfontsize);
+                        drawLocation( WEST  , sw - pad.right - EW_width                      , pad.top + rowHeight + (rightcount++ * EW_height)          , EW_width , EW_height , WHITE              , BLACK           , bannerColours[boardLocations[i].colour] , boardLocations[i] , bannerHeightAsFractionOfCardHeight, font  , fs        , secondaryfont   , secondaryfontsize    , LocationTextures);
                         break;
                 }
             }
         }
     }
 
-    void drawBoard(std::vector<Location> boardLocations, std::map<ColourSet, Color> stripColours, int screenwidth, int screenheight, padding pad, int row_height, int units_per_side, Font font, int fontsize, Font secondaryfont, int secondaryfontsize, frac bannerHeight) {
-        drawing::drawSides(boardLocations, stripColours, screenwidth, screenheight, pad, row_height, units_per_side, font, fontsize, bannerHeight, secondaryfont, secondaryfontsize);
+    void drawBoard(std::vector<Location> boardLocations, std::map<ColourSet, Color> stripColours, int screenwidth, int screenheight, padding pad, int row_height, int units_per_side, Font font, int fontsize, Font secondaryfont, int secondaryfontsize, frac bannerHeight, std::map<Monopoly::LocationTextures, Texture2D> LocationTextures) {
+        drawing::drawSides(boardLocations, stripColours, screenwidth, screenheight, pad, row_height, units_per_side, font, fontsize, bannerHeight, secondaryfont, secondaryfontsize, LocationTextures);
         drawing::drawCorners(boardLocations, screenwidth, screenheight, pad, row_height, font, fontsize);
     }
+
+    class Player {
+        public:
+        Player() {
+
+        }
+
+        int getBoardLocation() {
+            return board_location;
+        }
+
+        private:
+        int funds;
+        std::vector<Location> locations_bought;
+        int board_location;
+    };
 }
 
 typedef std::vector<Monopoly::Location> locationVectors;
+typedef std::map<Monopoly::LocationTextures, Texture2D> LocationTextureMap;
