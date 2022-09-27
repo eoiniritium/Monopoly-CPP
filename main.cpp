@@ -30,9 +30,10 @@ int main() {
 
     Image trainicon = LoadImage("assets/trainstation.png");
     Texture2D trainicontex = LoadTextureFromImage(trainicon);
+    Monopoly::TextureStruct texstruct = {trainicontex, 40.0f};
 
     LocationTextureMap locationTextures = {
-        {Monopoly::LocationTextures::TRAIN_TEXTURE, trainicontex}
+        {Monopoly::LocationTextures::TRAIN_TEXTURE, texstruct}
     };
 
     // Colours                                        -R-   -G-   -B-   -A-
