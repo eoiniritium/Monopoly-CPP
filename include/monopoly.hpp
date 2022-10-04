@@ -252,8 +252,8 @@ namespace Monopoly {
                         break;
 
                     case WEST:
-                        break;
                     case EAST:
+                        DrawTextureEx(tex, (Vector2){x + width - TEXwidth, y + height - TEXheight}, 0.0f, TEXscale, WHITE);
                         break;
                 }
             }
