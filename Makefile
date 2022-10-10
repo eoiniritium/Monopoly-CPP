@@ -7,3 +7,6 @@ compile:
 
 run:
 	./main.exe
+
+darwin:
+	g++ main.cpp `pkg-config --libs --cflags raylib` -o main.exe -O2 --static -static-libgcc -static-libstdc++ -Wall -Wno-missing-braces -I include -L include -Wc++11-extensions
