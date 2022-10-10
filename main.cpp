@@ -55,7 +55,7 @@ int main() {
     while(!WindowShouldClose()) {
         BeginDrawing();
             ClearBackground(background);
-            
+
             Monopoly::drawBoard(locations, stripColours, screenWidth, screenHeight, padding, rowHeight, unitsPerSide, txtFont, fontsize, txtFont, poundsymbolfontsize, (Monopoly::frac){1, 20}, locationTextures);
             DrawTextEx(titleFont, "MONOPOLY", (Vector2){10, 10}, titlefontsize, 5, BLACK);
 
