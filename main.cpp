@@ -64,7 +64,8 @@ int main() {
 
     // GUI
     GUI::Label TitleLabel("MONOPOLY", 10.0f, 10.0f, GUIfonttitlesize, GUIfontTitle, BLACK);
-
+    GUI::WidgetsDrawCalls drawCalls;
+    drawCalls.addWidget<GUI::Label>(TitleLabel);
 
     // Game loop
     while(!WindowShouldClose()) {
@@ -73,8 +74,8 @@ int main() {
             // Monopoly board draw
             Monopoly::drawBoard(locations, stripColours, screenWidth, screenHeight, padding, rowHeight, unitsPerSide, txtFont, fontsize, txtFont, poundsymbolfontsize, (Monopoly::frac){1, 20}, locationTextures);
             
-            //GUI draw calls
-            TitleLabel.draw();
+            //GUI draw call
+            drawCalls.drawCalls();
         EndDrawing();
     }
 
