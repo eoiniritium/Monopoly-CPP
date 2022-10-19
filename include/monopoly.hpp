@@ -5,6 +5,8 @@
 #include "raylib.h"
 #include "misc.hpp"
 
+typedef unsigned int uint;
+
 namespace Monopoly {
     enum LocationID {
         GO,
@@ -83,6 +85,17 @@ namespace Monopoly {
         COMMUNITY_CHEST_TEXTURE
     };
 
+    enum Characters {
+        CHARACTER_CAR,
+        CHARACTER_DOG,
+        CHARACTER_CAT,
+        CHARACTER_SHOE,
+        CHARACTER_THIMBLE,
+        CHARACTER_TOP_HAT,
+        CHARACTER_WHEELBARROW,
+        CHARACTER_BOAT
+    };
+
     struct Location {
         LocationID id;
         LocationType type;
@@ -106,7 +119,7 @@ namespace Monopoly {
         ret.push_back({CHANCE                , CHANCE_TYPE          , NA_M          , "CHANCE"                   , 0     , 0           });
         ret.push_back({EUSTON_ROAD           , STREET_TYPE          , LIGHT_BLUE_M  , "EUSTON ROAD"              , 100   , 0           });
         ret.push_back({PENTONVILLE_ROAD      , STREET_TYPE          , LIGHT_BLUE_M  , "PENTONVILLE ROAD"         , 120   , 0           });
-        ret.push_back({JAIL                  , JAIL_TYPE            , NA_M          , "IN JAIL JUST VISITING"   , 0     , 0           });
+        ret.push_back({JAIL                  , JAIL_TYPE            , NA_M          , "IN JAIL\nJUST VISITING"   , 0     , 0           });
         ret.push_back({PALL_MALL             , STREET_TYPE          , PINK_M        , "PALL MALL"                , 140   , 0           });
         ret.push_back({ELECTRIC_COMPANY      , UTILITIES_TYPE       , NA_M          , "ELECTRIC COMPANY"         , 150   , 0           });
         ret.push_back({WHITEHALL             , STREET_TYPE          , PINK_M        , "WHITEHALL"                , 140   , 0           });
@@ -155,6 +168,7 @@ namespace Monopoly {
     struct TextureStruct {
         Texture2D texture;
         float height;
+        float width;
     };
 
     namespace drawing {
@@ -212,6 +226,7 @@ namespace Monopoly {
             DrawRectangleLinesEx((Rectangle){(float)x, (float)y, (float)width, (float)height}, 0.8f, outline);
 
             LocationType locType = location.type;
+            
             // Draw Price
             std::string prefix = "$";
             std::string cost = std::to_string(location.cost);
@@ -250,10 +265,9 @@ namespace Monopoly {
                     case SOUTH:
                         DrawTextureEx(tex, (Vector2){x + width/2 - TEXwidth/2, y + height - MeasureTextEx(font, cost.c_str(), fs, 0).y*2 - TEXheight}, 0.0f, TEXscale, WHITE);
                         break;
-
                     case WEST:
                     case EAST:
-                        DrawTextureEx(tex, (Vector2){x + width - TEXwidth, y + height - TEXheight}, 0.0f, TEXscale, WHITE);
+                        DrawTextureEx(tex, (Vector2){x + width - TEXwidth - 5, y + height - TEXheight - 5}, 0.0f, TEXscale, WHITE);
                         break;
                 }
             }
@@ -305,7 +319,10 @@ namespace Monopoly {
 
     class Player {
         public:
-        Player() {
+        Player(Characters Character, std::map<Characters, TextureStruct> AvailableCharacters, uint location, double startingFunds) {
+            this->playerImage = AvailableCharacters[Character];
+            this->location = location;
+            this->funds = startingFunds;
 
         }
 
@@ -314,7 +331,10 @@ namespace Monopoly {
         }
 
         private:
-        int funds;
+        TextureStruct playerImage;
+        uint location;
+
+        double funds;
         std::vector<Location> locations_bought;
         int board_location;
     };
