@@ -6,10 +6,19 @@
 #include "gui.hpp"
 #include "misc.hpp"
 
+enum GameState {
+    MAIN_MENU,
+    MONOPOLY_GAME
+};
+
 int main() {
     locationVectors locations = Monopoly::setupBoard();
 
-    //Board Settings
+    //Colours
+    Color mmainmenuTitleFGCOLOUR = (Color){113, 153, 115, 255};
+    Color mmainmenuTitleBGCOLOUR = (Color){28, 66, 29, 255};
+
+    // Board Settings
     // App might crash if params incorrect
     const int screenWidth  = 1920;
     const int screenHeight = 1080;
@@ -62,20 +71,40 @@ int main() {
     };
 
 
-    // GUI
-    GUI::Label TitleLabel("MONOPOLY", 10.0f, 10.0f, GUIfonttitlesize, GUIfontTitle, BLACK);
-    GUI::WidgetsDrawCalls drawCalls;
-    drawCalls.addWidget<GUI::Label>(TitleLabel);
+    // UI
+        // Main Menu UI
+        GUI::LabelWithBackground mmainmenuTitle("Monopoly", 0, 0, GUIfonttitlesize, GUIfontTitle, mmainmenuTitleFGCOLOUR, mmainmenuTitleBGCOLOUR, (Monopoly::padding){10, 200, 10, 200});
+        mmainmenuTitle.setXY(screenWidth/2 - mmainmenuTitle.getDimensions().x/2, 50);
 
+        // Monopoly Game UI
+        GUI::Label TitleLabel("MONOPOLY", 10.0f, 10.0f, GUIfonttitlesize, GUIfontTitle, BLACK);
+
+
+
+
+
+
+
+    // Game state variable
+    GameState gameState = MONOPOLY_GAME;
+    
     // Game loop
     while(!WindowShouldClose()) {
         BeginDrawing();
-        ClearBackground(background);
-            // Monopoly board draw
-            Monopoly::drawBoard(locations, stripColours, screenWidth, screenHeight, padding, rowHeight, unitsPerSide, txtFont, fontsize, txtFont, poundsymbolfontsize, (Monopoly::frac){1, 20}, locationTextures);
-            
-            //GUI draw call
-            drawCalls.drawCalls();
+            switch (gameState) {
+                case MAIN_MENU:
+                    ClearBackground(background);
+                    mmainmenuTitle.draw();
+                    break;
+                case MONOPOLY_GAME:
+                    ClearBackground(background);
+                    // Monopoly board draw
+                    Monopoly::drawBoard(locations, stripColours, screenWidth, screenHeight, padding, rowHeight, unitsPerSide, txtFont, fontsize, txtFont, poundsymbolfontsize, (Monopoly::frac){1, 20}, locationTextures);
+                
+                    // Draw the GUI
+                    TitleLabel.draw();
+                    break;
+            };
         EndDrawing();
     }
 
